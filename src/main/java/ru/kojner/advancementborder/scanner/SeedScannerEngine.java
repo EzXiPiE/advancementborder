@@ -530,9 +530,11 @@ public class SeedScannerEngine {
             }
 
             ProtoChunk centerChunk = chunkGrid.get(centerPos);
-            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
+            owNoiseGen.applyBiomeDecoration(fakeRegion, centerChunk, overworld.structureManager());
 
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
             int foundLogY = -100;
+
             boolean foundTopSolid = false;
 
             // Идём сверху вниз по столбцу (0, 0)
@@ -693,8 +695,9 @@ public class SeedScannerEngine {
 
         int maxR = isOverworld ? ScanCriteria.BIOME_MAX_RADIUS : ScanCriteria.NETHER_BIOME_MAX_RADIUS;
         int maxRSq = maxR * maxR;
-        int step = ScanCriteria.BIOME_STEP;
+        int step = ScanCriteria.BIOME_STEP; // 64
 
+        // 1. Быстрый проход по поверхности с шагом 64
         for (int x = -maxR; x <= maxR; x += step) {
             for (int z = -maxR; z <= maxR; z += step) {
                 if (x * x + z * z > maxRSq) continue;
@@ -704,9 +707,24 @@ public class SeedScannerEngine {
             }
         }
 
+        // 2. Если на поверхности не хватило всего 1-2 узких биома (например, мангры или роща) — допроверяем с мелким шагом 24
+        if (isOverworld && missing.size() <= 2) {
+            int fineStep = 24;
+            for (int x = -maxR; x <= maxR; x += fineStep) {
+                for (int z = -maxR; z <= maxR; z += fineStep) {
+                    if (x * x + z * z > maxRSq) continue;
+                    Holder<Biome> biome = resolver.getNoiseBiome(x >> 2, 16, z >> 2);
+                    biome.unwrapKey().ifPresent(missing::remove);
+                    if (missing.isEmpty()) return true;
+                }
+            }
+        }
+
+        // 3. Проверка пещерных биомов на глубине Y = -32 (шаг 32 блока для узких пещер)
         if (isOverworld && !missing.isEmpty()) {
-            for (int x = -maxR; x <= maxR; x += step) {
-                for (int z = -maxR; z <= maxR; z += step) {
+            int caveStep = 32;
+            for (int x = -maxR; x <= maxR; x += caveStep) {
+                for (int z = -maxR; z <= maxR; z += caveStep) {
                     if (x * x + z * z > maxRSq) continue;
                     Holder<Biome> caveBiome = resolver.getNoiseBiome(x >> 2, -8, z >> 2);
                     caveBiome.unwrapKey().ifPresent(missing::remove);
@@ -717,6 +735,7 @@ public class SeedScannerEngine {
 
         return missing.isEmpty();
     }
+
 
     private static String posToStr(BlockPos pos) {
         return pos == null ? "N/A" : pos.getX() + ", " + pos.getZ();

@@ -58,6 +58,7 @@ neoForge {
             programArgument '--nogui'
             jvmArgument '-Xmx6G'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'advancementborder.autoscan', System.getProperty('advancementborder.autoscan', 'false')
         }
 
         // This run config launches GameTestServer and runs all registered gametests, then exits.
