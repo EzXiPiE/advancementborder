@@ -37,7 +37,7 @@
 
 1. Склонируйте репозиторий:
    ```bash
-   git clone https://github.com
+   git clone https://github.com/EzXiPiE/advancementborder.git
    ```
 2. Откройте проект в **IntelliJ IDEA** или **OpenIDE Pro** как Gradle-проект.
 3. Для сборки `.jar` файла мода выполните:
