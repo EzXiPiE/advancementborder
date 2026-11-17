@@ -1,25 +1,47 @@
+# Advancement Border (1 Достижение = 1 Блок)
 
-Installation information
-=======
+Мод для **Minecraft NeoForge**, добавляющий режим выживания с расширяющейся границей мира (**WorldBorder**) за выполнение достижений, а также встроенный многопоточный сканер сидов для гарантированного прохождения игры на 100%.
 
-This template repository can be directly cloned to get you started with a new
-mod. Simply create a new repository cloned from this one, by following the
-instructions provided by [GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
+---
 
-Once you have your clone, simply open the repository in the IDE of your choice. The usual recommendation for an IDE is either IntelliJ IDEA or Eclipse.
+## Механика режима
 
-If at any point you are missing libraries in your IDE, or you've run into problems you can
-run `gradlew --refresh-dependencies` to refresh the local cache. `gradlew clean` to reset everything 
-{this does not affect your code} and then start the process again.
+* **Стартовая зона `1×1`:** Игра начинается в одной клетке в центре мира `(0, 0)` с гарантированным деревом на старте.
+* **Расширение границы за достижения:** Каждое выполненное достижение увеличивает радиус границы мира в зависимости от его сложности:
+    * **Обычная задача (`Task`):** `+1` к радиусу
+    * **Цель (`Goal`):** `+10` к радиусу
+    * **Испытание (`Challenge`):** `+50` к радиусу
+    * **Скрытое достижение (`Hidden`):** `+150` к радиусу
+* **Единая граница для всех измерений:** Размер барьера синхронизируется между Верхним миром, Незером и Эндом (`1:1`).
+* **Командный прогресс:** Все игроки на сервере делят общий прогресс достижений и общую границу мира.
 
-Mapping Names:
-============
-By default, the MDK is configured to use the official mapping names from Mojang for methods and fields 
-in the Minecraft codebase. These names are covered by a specific license. All modders should be aware of this
-license. For the latest license text, refer to the mapping file itself, or the reference copy here:
-https://github.com/NeoForged/NeoForm/blob/main/Mojang.md
+---
 
-Additional Resources: 
-==========
-Community Documentation: https://docs.neoforged.net/  
-NeoForged Discord: https://discord.neoforged.net/
+## Игровые и серверные команды
+
+### Для игроков и администраторов
+* `/borderinfo` — показывает текущий размер границы мира, радиус и прогресс выполненных достижений.
+* `/borderstart` *(требуются права оператора)* — принудительно активирует режим челленджа и синхронизирует границу в текущем мире.
+
+### Встроенный сканер сидов (`/scanworld`)
+Инструмент для автоматического поиска сидов, в которых в радиусе **2000 блоков** гарантированно присутствуют все биомы, структуры, корабль Энда с элитрами и все редкие шаблоны отделки брони для получения 100% достижений:
+* `/scanworld start [количество]` — запускает многопоточный поиск сидов (результаты сохраняются в `found_seeds.json` и `found_seeds_perfect_tree.json`).
+* `/scanworld stop` — останавливает сканирование и сохраняет текущие результаты.
+* `/scanworld stats` — выводит статистику проверенных сидов, скорость и причины отсева.
+* `/scanworld testloot` — проверяет текущий сид мира на наличие критического лута, структур и стартовой поверхности.
+* `/scanworld verify` — перепроверяет сохранённую базу `found_seeds.json` и сохраняет полностью валидные сиды в `verified_ideal_seeds.json`.
+
+---
+
+## Установка и сборка
+
+1. Склонируйте репозиторий:
+   ```bash
+   git clone https://github.com
+   ```
+2. Откройте проект в **IntelliJ IDEA** или **OpenIDE Pro** как Gradle-проект.
+3. Для сборки `.jar` файла мода выполните:
+   ```bash
+   ./gradlew build
+   ```
+   Готовый файл появится в папке `build/libs/`.
